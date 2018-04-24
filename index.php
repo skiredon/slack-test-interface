@@ -1,7 +1,7 @@
 <?php
 
-define( 'SLACK_CLIENT_ID', '348375601427.350714607216' );
-define( 'SLACK_CLIENT_SECRET', '137d5419eea7b906bba1e66168000d18' );
+define( 'SLACK_CLIENT_ID', 'PAST HERE' );
+define( 'SLACK_CLIENT_SECRET', 'PAST HERE' );
 
 require_once 'slack-main.php';
 require_once 'slack-access.php';
