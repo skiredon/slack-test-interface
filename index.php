@@ -1,7 +1,7 @@
 <?php
 
-define( 'SLACK_CLIENT_ID', 'PAST HERE' );
-define( 'SLACK_CLIENT_SECRET', 'PAST HERE' );
+define( 'SLACK_CLIENT_ID', '348375601427.352349407939' );
+define( 'SLACK_CLIENT_SECRET', 'bd95f0c91cf3ef174b02b300838f3f59' );
 
 require_once 'slack-main.php';
 require_once 'slack-access.php';
@@ -143,7 +143,7 @@ if ( isset( $_REQUEST['action'] ) ) {
             </form>
             <?php else : ?>
                 <div class="auth-slack-wrap">
-                    <a href="https://slack.com/oauth/authorize?client_id=<?php $slack->get_client_id(); ?>&scope=incoming-webhook,channels:history,channels:read">
+                    <a href="https://slack.com/oauth/authorize?client_id=<?php $slack->get_client_id(); ?>&scope=incoming-webhook,channels:history,channels:read,users:read">
                     <img alt="Add to Slack" height="40" width="139" 
                     src="https://platform.slack-edge.com/img/add_to_slack.png" 
                     srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, 

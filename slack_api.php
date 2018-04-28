@@ -40,9 +40,7 @@ class Slack_API {
                 'http' => array(
                     'protocol_version' => 1.1,
                     'method'           => 'POST',
-                    'header'           => "Content-type: application/x-www-form-urlencoded\r\n" .
-                        "Content-length: " . strlen($post_data) . "\r\n" .
-                        "Connection: close\r\n",
+                    'header'           => "Content-type: application/x-www-form-urlencoded\r\nContent-length: ".strlen($post_data)."\r\nConnection: close\r\n",
                     'content'          => $post_data
                 ),
             )));
