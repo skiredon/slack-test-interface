@@ -20,7 +20,6 @@ class Slack {
     public function get_client_id() {
         
         if ( defined( 'SLACK_CLIENT_ID' ) ) {
-            echo SLACK_CLIENT_ID; 
             return SLACK_CLIENT_ID;
         }
         
@@ -56,7 +55,7 @@ class Slack {
         // Add the application id and secret to authenticate the request
         $options = array( 'auth' => array( $this->get_client_id(), $this->get_client_secret() ) );
         // Add the one-time token to request parameters
-        $data = array( 'code' => $code );
+        $data = array( 'code' => $code, 'redirect_uri' => SLACK_REDIRECT_URI);
         $response = Requests::post( self::$api_root . 'oauth.access', $headers, $data, $options );
         // Handle the JSON response
         $json_response = json_decode( $response->body );

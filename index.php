@@ -2,6 +2,7 @@
 
 define( 'SLACK_CLIENT_ID', '' );
 define( 'SLACK_CLIENT_SECRET', '' );
+define ('SLACK_REDIRECT_URI', 'https://ciframe.com/test/skiredon/index.php?action=oauth');
 
 require_once 'slack-main.php';
 require_once 'slack-access.php';
@@ -52,6 +53,12 @@ function do_action( $slack, $action ) {
             }
             break;
         case 'new_integrate':
+			$access_string = file_get_contents('access.txt');
+			$access_data = json_decode( $access_string, true );
+			$token_ = $access_data["access_token"];
+			$args = array("token" => $token_);
+			$Slack = new Slack_API($token_);
+            $response = $Slack->call('auth.revoke', $args);
             file_put_contents( 'access.txt', '' );
             header('Location: '.$_SERVER['REQUEST_URI']);
             break;
@@ -134,7 +141,7 @@ if ( isset( $_REQUEST['action'] ) ) {
                 <input class="form_input" type="text" name="text" placeholder="Введите сообщение для отправки в Slack" />
                 <button type="submit">Отправить</button>
             </form>
-            <form class="form-msg" action="/messages.php" method="get">
+            <form class="form-msg" action="/test/skiredon/messages.php" method="get">
                 <button class="btn-msg" type="submit">Получить сообщения</button>
             </form>
             <form class="form-msg" action="index.php" method="post">
@@ -143,7 +150,8 @@ if ( isset( $_REQUEST['action'] ) ) {
             </form>
             <?php else : ?>
                 <div class="auth-slack-wrap">
-                    <a href="https://slack.com/oauth/authorize?client_id=<?php $slack->get_client_id(); ?>&scope=incoming-webhook,channels:history,channels:read,users:read">
+                    <a href="https://slack.com/oauth/authorize?client_id=<?php echo $slack->get_client_id(); ?>&scope=incoming-webhook,channels:history,
+                    channels:read,users:read&redirect_uri=<?php echo SLACK_REDIRECT_URI?>">
                     <img alt="Add to Slack" height="40" width="139" 
                     src="https://platform.slack-edge.com/img/add_to_slack.png" 
                     srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, 

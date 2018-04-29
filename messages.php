@@ -40,7 +40,7 @@ function main_process() {
     $access_data = json_decode( $access_string, true );
     $token = $access_data["access_token"];
     $Slack = new Slack_API($token);
-    echo "<header><a href='/' class='link_main'>Главная страница</a><h2 class='msg-title'>Список сообщений из канала <span>".$access_data["incoming_webhook"]["channel"]."</span></h2></header>";
+    echo "<header><a href='/test/skiredon/' class='link_main'>Главная страница</a><h2 class='msg-title'>Список сообщений из канала <span>".$access_data["incoming_webhook"]["channel"]."</span></h2></header>";
     $users = get_members($Slack);
     $options = array(
         "channel" => $access_data["incoming_webhook"]["channel_id"]
