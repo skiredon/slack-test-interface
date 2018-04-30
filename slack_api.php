@@ -24,10 +24,11 @@ class Slack_API {
         return $this->request($method, $args, $timeout);
     }
 
-    private function request($method, $args = array(), $timeout = 10){
+    private function request($method, $args = array(), $timeout = 10)
+    {
         $url = str_replace('<method>', $method, $this->api_endpoint);
         $args['token'] = $this->api_token;
-        if (function_exists('curl_version')){
+        if (function_exists('curl_version')) {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -39,12 +40,12 @@ class Slack_API {
             curl_close($ch);
         } else {
             $post_data = http_build_query($args);
-            $result    = file_get_contents($url, false, stream_context_create(array(
+            $result = file_get_contents($url, false, stream_context_create(array(
                 'http' => array(
                     'protocol_version' => 1.1,
-                    'method'           => 'POST',
-                    'header'           => "Content-type: application/x-www-form-urlencoded\r\nContent-length: ".strlen($post_data)."\r\nConnection: close\r\n",
-                    'content'          => $post_data
+                    'method' => 'POST',
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\nContent-length: " . strlen($post_data) . "\r\nConnection: close\r\n",
+                    'content' => $post_data
                 ),
             )));
         }

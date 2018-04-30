@@ -15,40 +15,39 @@ function pretty_json($json)
     $newLine = "\n";
 
     for ($i = 0; $i < $strLen; $i++) {
-    // Grab the next character in the string.
-    $char = $json[$i];
+        // Grab the next character in the string.
+        $char = $json[$i];
 
-    // Are we inside a quoted string?
-    if ($char == '"') {
-        // search for the end of the string (keeping in mind of the escape sequences)
-        if (!preg_match('`"(\\\\\\\\|\\\\"|.)*?"`s', $json, $m, null, $i)) {
-            return $json;
+        // Are we inside a quoted string?
+        if ($char == '"') {
+            // search for the end of the string (keeping in mind of the escape sequences)
+            if (!preg_match('`"(\\\\\\\\|\\\\"|.)*?"`s', $json, $m, null, $i)) {
+                return $json;
+            }
+
+            // add extracted string to the result and move ahead
+            $result .= $m[0];
+            $i += strLen($m[0]) - 1;
+            continue;
+        } else if ($char == '}' || $char == ']') {
+            $result .= $newLine;
+            $pos--;
+            $result .= str_repeat($indentStr, $pos);
         }
 
-        // add extracted string to the result and move ahead
-        $result .= $m[0];
-        $i += strLen($m[0]) - 1;
-        continue;
-    }
-    else if ($char == '}' || $char == ']') {
-        $result .= $newLine;
-        $pos --;
-        $result .= str_repeat($indentStr, $pos);
-    }
+        // Add the character to the result string.
+        $result .= $char;
 
-    // Add the character to the result string.
-    $result .= $char;
+        // If the last character was the beginning of an element,
+        // output a new line and indent the next line.
+        if ($char == ',' || $char == '{' || $char == '[') {
+            $result .= $newLine;
+            if ($char == '{' || $char == '[') {
+                $pos++;
+            }
 
-    // If the last character was the beginning of an element,
-    // output a new line and indent the next line.
-    if ($char == ',' || $char == '{' || $char == '[') {
-        $result .= $newLine;
-        if ($char == '{' || $char == '[') {
-        $pos ++;
+            $result .= str_repeat($indentStr, $pos);
         }
-
-        $result .= str_repeat($indentStr, $pos);
-    }
 
     }
     return $result;
@@ -63,28 +62,29 @@ function get_messages($slack, $options)
         $obj = $messages[$i];
         if (isset($obj["user"])) {
             $user = $obj["user"];
-        }
-        else {
+        } else {
             $user = "BOT_ID";
         }
         $ret[$i] = array("user" => $user, "message" => $obj["text"]);
     }
     return $ret;
 }
-function get_members($slack) {
+function get_members($slack)
+{
     $profile = $slack->call('users.list');
 
     $members = $profile["members"];
 
     $users = array();
-    for ($i=0; $i<count($members); ++$i) {
-        $users[$members[$i]["id"]] = array( "name" => $members[$i]["name"], "real_name" => $members[$i]["real_name"]);
+    for ($i = 0; $i < count($members); ++$i) {
+        $users[$members[$i]["id"]] = array("name" => $members[$i]["name"], "real_name" => $members[$i]["real_name"]);
     }
 
     return $users;
 }
 
-function main_process($token, $access_data) {
+function main_process($token, $access_data)
+{
     $Slack = new Slack_API($token);
     $users = get_members($Slack);
     $options = array(
@@ -92,21 +92,22 @@ function main_process($token, $access_data) {
     );
     $messages = array_reverse(get_messages($Slack, $options));
 
-    for ($i=0; $i<count($messages); ++$i) {
+    for ($i = 0; $i < count($messages); ++$i) {
 
-        $user = $messages[$i]["user"];
+        if ($i < 100) {
+            $user = $messages[$i]["user"];
 
-        if ($user == "BOT_ID") {
-            $name = "This is app.";
-            $real_name = "This is app.";
+            if ($user == "BOT_ID") {
+                $name = "This is app.";
+                $real_name = "This is app.";
+            } else {
+                $name = $users[$user]["name"];
+                $real_name = $users[$user]["real_name"];
+            }
+
+            echo "<div class='block_msg'><span>Никнейм: " . $name . "</span><span>Имя: " . $real_name . "
+            </span><span>Сообщение: " . $messages[$i]["message"] . "</span></div>";
         }
-        else {
-            $name = $users[$user]["name"];
-            $real_name = $users[$user]["real_name"];
-        }
-
-        echo "<div class='block_msg'><span>Никнейм: ".$name."</span><span>Имя: ".$real_name."
-</span><span>Сообщение: ".$messages[$i]["message"]."</span></div>";
     }
 }
 
@@ -122,7 +123,8 @@ function to_json($token, $access_data)
     $Slack = new Slack_API($token);
     $users = get_members($Slack);
     $options = array(
-        "channel" => $access_data["incoming_webhook"]["channel_id"]
+        "channel" => $access_data["incoming_webhook"]["channel_id"],
+        "count" => 400
     );
     $messages = array_reverse(get_messages($Slack, $options));
 
@@ -140,11 +142,9 @@ function to_json($token, $access_data)
 
         $msgs = $json_[$user]['messages'];
 
-        if (isset($msgs))
-        {
+        if (isset($msgs)) {
             $msgs = array_merge($json_[$user]['messages'], array($messages[$i]["message"]));
-        } else
-        {
+        } else {
             $msgs = array($messages[$i]["message"]);
             #echo $msgs."<br>";
         }
@@ -157,7 +157,7 @@ function to_json($token, $access_data)
 }
 
 if ( file_exists( 'access.txt' ) ) {
-    $access_string = file_get_contents( 'access.txt' );
+    $access_string = file_get_contents('access.txt');
 } else {
     $access_string = '{}';
 }

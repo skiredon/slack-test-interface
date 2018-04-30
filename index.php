@@ -12,10 +12,8 @@ use App\Slack\Slack;
 define ('URL_MESSAGES', '/test/skiredon/');
 define ('SLACK_REDIRECT_URI', 'https://ciframe.com/test/skiredon/index.php?action=oauth');
 
-#define( 'SLACK_CLIENT_ID', '' );
-#define( 'SLACK_CLIENT_SECRET', '' );
-#define ('SLACK_REDIRECT_URI', 'http://127.0.0.1/test-dev.ru/index.php?action=oauth');
-#define ('URL_MESSAGES', '/test-dev.ru/');
+//define ('SLACK_REDIRECT_URI', 'http://127.0.0.1/test/skiredon/index.php?action=oauth');
+//define ('URL_MESSAGES', '/test-dev.ru/');
 
 require_once 'slack-main.php';
 require_once 'slack-access.php';
@@ -23,34 +21,36 @@ require_once 'slack-api-exception.php';
 
 require_once 'slack_api.php';
 
-function initialize_slack_interface() {
+function initialize_slack_interface()
+{
 
-    if ( file_exists( 'access.txt' ) ) {
-        $access_string = file_get_contents( 'access.txt' );
+    if (file_exists('access.txt')) {
+        $access_string = file_get_contents('access.txt');
     } else {
         $access_string = '{}';
     }
 
-    $access_data = json_decode( $access_string, true );
-    $slack = new Slack( $access_data );
+    $access_data = json_decode($access_string, true);
+    $slack = new Slack($access_data);
     return $slack;
 }
 
-function do_action( $slack, $action ) {
+function do_action( $slack, $action )
+{
     $result_message = '';
-    switch ( $action ) {
+    switch ($action) {
         // Handles the OAuth callback by exchanging the access code to
         // a valid token and saving it in a file
         case 'oauth':
             $code = $_GET['code'];
             // Exchange code to valid access toke
             try {
-                $access = $slack->do_oauth( $code );
-                if ( $access ) {
-                    file_put_contents( 'access.txt', $access->to_json() );
+                $access = $slack->do_oauth($code);
+                if ($access) {
+                    file_put_contents('access.txt', $access->to_json());
                     $result_message = 'Приложение успешно добавлено в Slack канал';
                 }
-            } catch ( Slack_API_Exception $e ) {
+            } catch (Slack_API_Exception $e) {
                 $result_message = $e->getMessage();
             }
             break;
@@ -60,20 +60,19 @@ function do_action( $slack, $action ) {
             try {
                 $slack->send_notification($message);
                 $result_message = 'Сообщение отправлено в Slack канал';
-            }
-            catch (Slack_API_Exception $e) {
+            } catch (Slack_API_Exception $e) {
                 $result_message = $e->getMessage();
             }
             break;
         case 'new_integrate':
-			$access_string = file_get_contents('access.txt');
-			$access_data = json_decode( $access_string, true );
-			$token_ = $access_data["access_token"];
-			$args = array("token" => $token_);
-			$Slack = new Slack_API($token_);
+            $access_string = file_get_contents('access.txt');
+            $access_data = json_decode($access_string, true);
+            $token_ = $access_data["access_token"];
+            $args = array("token" => $token_);
+            $Slack = new Slack_API($token_);
             $response = $Slack->call('auth.revoke', $args);
-            file_put_contents( 'access.txt', '' );
-            header('Location: '.$_SERVER['REQUEST_URI']);
+            file_put_contents('access.txt', '');
+            header('Location: ' . $_SERVER['REQUEST_URI']);
             break;
         default:
             break;
@@ -85,7 +84,7 @@ $slack = initialize_slack_interface();
 $result_message = '';
 if ( isset( $_REQUEST['action'] ) ) {
     $action = $_REQUEST['action'];
-    $result_message = do_action( $slack, $action );
+    $result_message = do_action($slack, $action);
 }
 ?>
 <html>
@@ -102,6 +101,11 @@ if ( isset( $_REQUEST['action'] ) ) {
                 margin: 0 auto;
                 font-size: 16px;
             }
+            .clearfix:after {
+                content:"";
+                display:block;
+                clear:both;
+            }
             h1 {
                 text-align: center;
             }
@@ -112,13 +116,13 @@ if ( isset( $_REQUEST['action'] ) ) {
             input[type="text"] {
                 padding: 5px;
                 height: 40px;
-                width: 80%;
+                width: 78%;
                 margin-right: 2%;
                 font-size: 16px;
             }
             button {
                 padding: 10px;
-                min-width: 118px;
+                min-width: 126px;
                 background-color: lavender;
                 height: 40px;
                 border: none;
@@ -137,6 +141,15 @@ if ( isset( $_REQUEST['action'] ) ) {
             .auth-slack-wrap {
                 text-align: center;
             }
+            .input-wrap {
+                margin-bottom: 15px;
+            }
+            .input-wrap .form_input {
+                float: left;
+            }
+            .input-wrap button {
+                float: right;
+            }
         </style>
     <body>
         <h1>Slack Интерфейс</h1>
@@ -148,8 +161,10 @@ if ( isset( $_REQUEST['action'] ) ) {
         <?php if ( $slack->is_authenticated() ) : ?>
             <form action="" method="post">
                 <input type="hidden" name="action" value="send_notification"/>
-                <input class="form_input" type="text" name="text" placeholder="Введите сообщение для отправки в Slack" />
-                <button type="submit">Отправить</button>
+                <div class="input-wrap clearfix">
+                    <input class="form_input" type="text" name="text" placeholder="Введите сообщение для отправки в Slack" />
+                    <button type="submit">Отправить</button>
+                </div>
             </form>
             <form class="form-msg" action=<?php if (isset($f)) { echo URL_MESSAGES; } ?>messages.php method="get">
                 <button class="btn-msg" type="submit">Получить сообщения</button>
