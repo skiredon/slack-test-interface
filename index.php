@@ -2,6 +2,9 @@
 
 namespace App\Index;
 
+error_reporting(E_ERROR | E_PARSE);
+
+
 define( 'SLACK_CLIENT_ID', 'PAST HERE' );
 define( 'SLACK_CLIENT_SECRET', 'PAST HERE' );
 
@@ -174,7 +177,7 @@ if ( isset( $_REQUEST['action'] ) ) {
 						<button class="form_button" type="submit">Отправить</button>
 					</div>
 				</form>
-				<form class="form-msg" action=<?php if (isset($f)) { echo URL_MESSAGES; } ?>messages.php method="get">
+				<form class="form-msg" action=<?php echo URL_MESSAGES; ?>messages.php method="get">
 					<button class="btn-msg" type="submit">Получить сообщения</button>
 				</form>
 				<form class="form-msg" action="index.php" method="post">

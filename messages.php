@@ -2,6 +2,9 @@
 
 namespace App\Messages;
 
+error_reporting(E_ERROR | E_PARSE);
+
+
 use App\SlackAPI\Slack_API;
 
 require_once 'slack_api.php';
