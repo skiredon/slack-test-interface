@@ -12,9 +12,6 @@ use App\Slack\Slack;
 define ('URL_MESSAGES', '/test/skiredon/');
 define ('SLACK_REDIRECT_URI', 'https://ciframe.com/test/skiredon/index.php?action=oauth');
 
-//define ('SLACK_REDIRECT_URI', 'http://127.0.0.1/test/skiredon/index.php?action=oauth');
-//define ('URL_MESSAGES', '/test-dev.ru/');
-
 require_once 'slack-main.php';
 require_once 'slack-access.php';
 require_once 'slack-api-exception.php';
@@ -90,17 +87,20 @@ if ( isset( $_REQUEST['action'] ) ) {
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Slack Интерфейс</title>
         <link href="static/css/bootstrap.min.css" rel="stylesheet">
     </head>
         <style>
             body {
                 font-family: Helvetica, sans-serif;
-                padding: 20px;
-                width: 50%;
-                margin: 0 auto;
-                font-size: 16px;
+				font-size: 16px;
             }
+			.root {
+				padding: 20px;
+                margin: 0 auto;
+				max-width: 600px;
+			}
             .clearfix:after {
                 content:"";
                 display:block;
@@ -116,18 +116,20 @@ if ( isset( $_REQUEST['action'] ) ) {
             input[type="text"] {
                 padding: 5px;
                 height: 40px;
-                width: 78%;
-                margin-right: 2%;
+                width: 100%;
                 font-size: 16px;
             }
             button {
                 padding: 10px;
-                min-width: 126px;
                 background-color: lavender;
                 height: 40px;
                 border: none;
                 font-size: 16px;
             }
+			button.form_button
+			{
+				margin-left: 15px;
+			}
             button:hover {
                 background-color: #e1e5ec;
                 cursor: pointer;
@@ -142,47 +144,54 @@ if ( isset( $_REQUEST['action'] ) ) {
                 text-align: center;
             }
             .input-wrap {
+				display: flex;
                 margin-bottom: 15px;
             }
             .input-wrap .form_input {
-                float: left;
+				display: inline-block;
             }
             .input-wrap button {
-                float: right;
-            }
+				box-sizing: border-box;
+				display: inline-block;
+				width: 100%;
+				max-width: 19%;
+				min-width: 100px;
+			}
         </style>
     <body>
-        <h1>Slack Интерфейс</h1>
-        <?php if ( $result_message ) : ?>
-            <p class="notification">
-                <?php echo $result_message; ?>
-            </p>
-        <?php endif; ?>
-        <?php if ( $slack->is_authenticated() ) : ?>
-            <form action="" method="post">
-                <input type="hidden" name="action" value="send_notification"/>
-                <div class="input-wrap clearfix">
-                    <input class="form_input" type="text" name="text" placeholder="Введите сообщение для отправки в Slack" />
-                    <button type="submit">Отправить</button>
-                </div>
-            </form>
-            <form class="form-msg" action=<?php if (isset($f)) { echo URL_MESSAGES; } ?>messages.php method="get">
-                <button class="btn-msg" type="submit">Получить сообщения</button>
-            </form>
-            <form class="form-msg" action="index.php" method="post">
-                <input type="hidden" name="action" value="new_integrate"/>
-                <button class="btn-msg" type="submit">Новая интеграция</button>
-            </form>
-            <?php else : ?>
-                <div class="auth-slack-wrap">
-                    <a href="https://slack.com/oauth/authorize?client_id=<?php echo $slack->get_client_id(); ?>&scope=incoming-webhook,channels:history,
-                    channels:read,users:read&redirect_uri=<?php echo SLACK_REDIRECT_URI?>">
-                    <img alt="Add to Slack" height="40" width="139" 
-                    src="https://platform.slack-edge.com/img/add_to_slack.png" 
-                    srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, 
-                    https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
-                </div>
-        <?php endif; ?>
+		<div class="root">
+			<h1>Slack Интерфейс</h1>
+			<?php if ( $result_message ) : ?>
+				<p class="notification">
+					<?php echo $result_message; ?>
+				</p>
+			<?php endif; ?>
+			<?php if ( $slack->is_authenticated() ) : ?>
+				<form action="" method="post">
+					<input type="hidden" name="action" value="send_notification"/>
+					<div class="input-wrap">
+						<input class="form_input" type="text" name="text" placeholder="Введите сообщение для отправки в Slack" />
+						<button class="form_button" type="submit">Отправить</button>
+					</div>
+				</form>
+				<form class="form-msg" action=<?php if (isset($f)) { echo URL_MESSAGES; } ?>messages.php method="get">
+					<button class="btn-msg" type="submit">Получить сообщения</button>
+				</form>
+				<form class="form-msg" action="index.php" method="post">
+					<input type="hidden" name="action" value="new_integrate"/>
+					<button class="btn-msg" type="submit">Новая интеграция</button>
+				</form>
+				<?php else : ?>
+					<div class="auth-slack-wrap">
+						<a href="https://slack.com/oauth/authorize?client_id=<?php echo $slack->get_client_id(); ?>&scope=incoming-webhook,channels:history,
+						channels:read,users:read&redirect_uri=<?php echo SLACK_REDIRECT_URI?>">
+						<img alt="Add to Slack" height="40" width="139" 
+						src="https://platform.slack-edge.com/img/add_to_slack.png" 
+						srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, 
+						https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+					</div>
+			<?php endif; ?>
+		</div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
         <script src="js/bootstrap.min.js"></script>

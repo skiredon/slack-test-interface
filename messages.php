@@ -168,6 +168,7 @@ $json_data = to_json($token, $access_data);
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Slack Интерфейс</title>
         <link href="static/css/bootstrap.min.css" rel="stylesheet">
     </head>
@@ -197,6 +198,9 @@ $json_data = to_json($token, $access_data);
                 background-color: #e1e5ec;
                 border: grey 1px solid ;
                 color: black;
+				min-height: 100px;
+				max-height: 100px;
+				overflow-y: auto;
                 padding: 6px;
                 width: 40%;
                 margin-bottom: 10px;
@@ -213,11 +217,11 @@ $json_data = to_json($token, $access_data);
                 background-color: lightgreen;
                 color: black;
                 padding: 6px;
-                width: 14%;
+                width: 100%;
                 margin-bottom: 10px;
-                margin-right: 10px;
                 text-decoration: none;
                 text-align: center;
+				min-width: 150px;
             }
             a.link_main:focus, a.link_main:hover {
                 background-color: mediumseagreen;
@@ -243,6 +247,16 @@ $json_data = to_json($token, $access_data);
             .nav-tabs, .nav-pills {
                 text-align:center;
             }
+			.link_wrap {
+				width: 20%;
+				min-width: 200px;
+				margin: 0 auto;
+			}
+			@media only screen and (max-width: 600px) {
+				.block_msg {
+					width: 100%;
+				}
+			}
         </style>
     <body>
         <div class="root">
@@ -252,7 +266,9 @@ $json_data = to_json($token, $access_data);
                         <?php echo $access_data["incoming_webhook"]["channel"]?>
                     </span>
                 </h2>
-                <a href=. class='link_main'>Главная страница</a>
+                <div class="link_wrap">
+					<a href=. class='link_main'>Главная страница</a>
+				</div>
                 </header>
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#tab-one" aria-controls="home" role="tab" data-toggle="tab">Вид 1</a></li>
@@ -260,7 +276,6 @@ $json_data = to_json($token, $access_data);
             </ul>
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="tab-one">
-                    <!--                    echo json_encode($json_data, JSON_PRETTY_PRINT); ?>-->
                     <h2>Данные также сохранены в файле <i>"messages.json"</i></i></h2>
                     <pre>
                         <?php echo pretty_json(json_encode($json_data)) ?>
