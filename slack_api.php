@@ -1,4 +1,7 @@
 <?php
+
+namespace App\SlackAPI;
+
 /**
  * Simple abstraction of Slack API
  *

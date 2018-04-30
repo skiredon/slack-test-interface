@@ -1,5 +1,5 @@
 <?php
-#namespace Slack_Interface;
+namespace App\SlackAcess;
 /**
  * A class for holding Slack authentication data.
  */

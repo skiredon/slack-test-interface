@@ -1,5 +1,12 @@
 <?php
 
+namespace App\Slack;
+
+use App\SlackAcess\Slack_Access;
+use App\SlackException\Slack_API_Exception;
+
+use Requests;
+
 require 'vendor/autoload.php';
 
 class Slack {

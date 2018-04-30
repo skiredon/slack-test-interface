@@ -1,8 +1,21 @@
 <?php
 
-define( 'SLACK_CLIENT_ID', '' );
-define( 'SLACK_CLIENT_SECRET', '' );
+namespace App\Index;
+
+define( 'SLACK_CLIENT_ID', 'PAST HERE' );
+define( 'SLACK_CLIENT_SECRET', 'PAST HERE' );
+
+use App\SlackException\Slack_API_Exception;
+use App\SlackAPI\Slack_API;
+use App\Slack\Slack;
+
+define ('URL_MESSAGES', '/test/skiredon/');
 define ('SLACK_REDIRECT_URI', 'https://ciframe.com/test/skiredon/index.php?action=oauth');
+
+#define( 'SLACK_CLIENT_ID', '' );
+#define( 'SLACK_CLIENT_SECRET', '' );
+#define ('SLACK_REDIRECT_URI', 'http://127.0.0.1/test-dev.ru/index.php?action=oauth');
+#define ('URL_MESSAGES', '/test-dev.ru/');
 
 require_once 'slack-main.php';
 require_once 'slack-access.php';
@@ -79,6 +92,7 @@ if ( isset( $_REQUEST['action'] ) ) {
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Slack Интерфейс</title>
+        <link href="static/css/bootstrap.min.css" rel="stylesheet">
     </head>
         <style>
             body {
@@ -101,10 +115,6 @@ if ( isset( $_REQUEST['action'] ) ) {
                 width: 80%;
                 margin-right: 2%;
                 font-size: 16px;
-            }
-            .block {
-                background-color: #e1e5ec;
-                border: #4D5662 1px solid ;
             }
             button {
                 padding: 10px;
@@ -141,7 +151,7 @@ if ( isset( $_REQUEST['action'] ) ) {
                 <input class="form_input" type="text" name="text" placeholder="Введите сообщение для отправки в Slack" />
                 <button type="submit">Отправить</button>
             </form>
-            <form class="form-msg" action="/test/skiredon/messages.php" method="get">
+            <form class="form-msg" action=<?php if (isset($f)) { echo URL_MESSAGES; } ?>messages.php method="get">
                 <button class="btn-msg" type="submit">Получить сообщения</button>
             </form>
             <form class="form-msg" action="index.php" method="post">
@@ -158,5 +168,8 @@ if ( isset( $_REQUEST['action'] ) ) {
                     https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
                 </div>
         <?php endif; ?>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="js/bootstrap.min.js"></script>
     </body>
 </html>

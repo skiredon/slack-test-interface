@@ -1,5 +1,58 @@
 <?php
+
+namespace App\Messages;
+
+use App\SlackAPI\Slack_API;
+
 require_once 'slack_api.php';
+
+function pretty_json($json)
+{
+    $result = '';
+    $pos = 0;
+    $strLen = strlen($json);
+    $indentStr = "\t";
+    $newLine = "\n";
+
+    for ($i = 0; $i < $strLen; $i++) {
+    // Grab the next character in the string.
+    $char = $json[$i];
+
+    // Are we inside a quoted string?
+    if ($char == '"') {
+        // search for the end of the string (keeping in mind of the escape sequences)
+        if (!preg_match('`"(\\\\\\\\|\\\\"|.)*?"`s', $json, $m, null, $i)) {
+            return $json;
+        }
+
+        // add extracted string to the result and move ahead
+        $result .= $m[0];
+        $i += strLen($m[0]) - 1;
+        continue;
+    }
+    else if ($char == '}' || $char == ']') {
+        $result .= $newLine;
+        $pos --;
+        $result .= str_repeat($indentStr, $pos);
+    }
+
+    // Add the character to the result string.
+    $result .= $char;
+
+    // If the last character was the beginning of an element,
+    // output a new line and indent the next line.
+    if ($char == ',' || $char == '{' || $char == '[') {
+        $result .= $newLine;
+        if ($char == '{' || $char == '[') {
+        $pos ++;
+        }
+
+        $result .= str_repeat($indentStr, $pos);
+    }
+
+    }
+    return $result;
+}
 
 function get_messages($slack, $options)
 {
@@ -31,21 +84,14 @@ function get_members($slack) {
     return $users;
 }
 
-function main_process() {
-    if ( file_exists( 'access.txt' ) ) {
-        $access_string = file_get_contents( 'access.txt' );
-    } else {
-        $access_string = '{}';
-    }
-    $access_data = json_decode( $access_string, true );
-    $token = $access_data["access_token"];
+function main_process($token, $access_data) {
     $Slack = new Slack_API($token);
-    echo "<header><a href='/test/skiredon/' class='link_main'>Главная страница</a><h2 class='msg-title'>Список сообщений из канала <span>".$access_data["incoming_webhook"]["channel"]."</span></h2></header>";
     $users = get_members($Slack);
     $options = array(
         "channel" => $access_data["incoming_webhook"]["channel_id"]
     );
     $messages = array_reverse(get_messages($Slack, $options));
+
     for ($i=0; $i<count($messages); ++$i) {
 
         $user = $messages[$i]["user"];
@@ -63,16 +109,79 @@ function main_process() {
 </span><span>Сообщение: ".$messages[$i]["message"]."</span></div>";
     }
 }
+
+function to_json($token, $access_data)
+{
+    if (file_exists('messages.json')) {
+        #$json_ = file_get_contents('messages.json');
+        file_put_contents('messages.json', '');
+    } else {
+        $json_ = array();
+    }
+
+    $Slack = new Slack_API($token);
+    $users = get_members($Slack);
+    $options = array(
+        "channel" => $access_data["incoming_webhook"]["channel_id"]
+    );
+    $messages = array_reverse(get_messages($Slack, $options));
+
+    for ($i = 0; $i < count($messages); ++$i) {
+
+        $user = $messages[$i]["user"];
+
+        if ($user == "BOT_ID") {
+            $name = "This is app.";
+            $real_name = "This is app.";
+        } else {
+            $name = $users[$user]["name"];
+            $real_name = $users[$user]["real_name"];
+        }
+
+        $msgs = $json_[$user]['messages'];
+
+        if (isset($msgs))
+        {
+            $msgs = array_merge($json_[$user]['messages'], array($messages[$i]["message"]));
+        } else
+        {
+            $msgs = array($messages[$i]["message"]);
+            #echo $msgs."<br>";
+        }
+
+        $json_[$user] = array("name" => $name, "real_name" => $real_name, "messages" => $msgs);
+        file_put_contents('messages.json', json_encode($json_, JSON_PRETTY_PRINT));
+    }
+
+    return $json_;
+}
+
+if ( file_exists( 'access.txt' ) ) {
+    $access_string = file_get_contents( 'access.txt' );
+} else {
+    $access_string = '{}';
+}
+$access_data = json_decode( $access_string, true );
+$token = $access_data["access_token"];
+$json_data = to_json($token, $access_data);
 ?>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Slack Интерфейс</title>
+        <link href="static/css/bootstrap.min.css" rel="stylesheet">
     </head>
         <style>
+            html {
+                overflow: -moz-scrollbars-vertical;
+                overflow-y: scroll;
+            }
             body {
                 font-family: Helvetica, sans-serif;
-                padding: 20px;
+                margin: 20px;
+            }
+            .root {
+                padding: 10px;
             }
             input {
                 padding: 10px;
@@ -100,9 +209,6 @@ function main_process() {
                 color: darkblue;
             }
             .link_main {
-                position: absolute;
-                left: 0;
-                top: 0;
                 display: inline-block;
                 background-color: lightgreen;
                 color: black;
@@ -111,18 +217,64 @@ function main_process() {
                 margin-bottom: 10px;
                 margin-right: 10px;
                 text-decoration: none;
+                text-align: center;
             }
-            .link_main:hover {
+            a.link_main:focus, a.link_main:hover {
                 background-color: mediumseagreen;
+                text-decoration: none;!important;
             }
             .msg-title {
-                display: inline-block;
-
+                text-align: center;
+                margin-bottom: 35px;
+            }
+            .nav-tabs {
+                margin-bottom: 10px;
+            }
+            .nav-tabs > li, .nav-pills > li {
+                float:none;
+                display:inline-block;
+                *display:inline; /* ie7 fix */
+                zoom:1; /* hasLayout ie7 trigger */
+            }
+            a:hover, a:focus {
+                text-decoration: none;!important;
+                background-color: limegreen;
+            }
+            .nav-tabs, .nav-pills {
+                text-align:center;
             }
         </style>
     <body>
-        <div class="wrapper_msgs">
-            <?php main_process(); ?>
+        <div class="root">
+            <header>
+                <h2 class='msg-title'>Список сообщений из канала
+                    <span>
+                        <?php echo $access_data["incoming_webhook"]["channel"]?>
+                    </span>
+                </h2>
+                <a href=. class='link_main'>Главная страница</a>
+                </header>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#tab-one" aria-controls="home" role="tab" data-toggle="tab">Вид 1</a></li>
+                <li role="presentation"><a href="#tab-two" aria-controls="profile" role="tab" data-toggle="tab">Вид 2</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="tab-one">
+                    <!--                    echo json_encode($json_data, JSON_PRETTY_PRINT); ?>-->
+                    <h2>Данные также сохранены в файле <i>"messages.json"</i></i></h2>
+                    <pre>
+                        <?php echo pretty_json(json_encode($json_data)) ?>
+                    </pre>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="tab-two">
+                    <div class="wrapper_msgs">
+                        <?php main_process($token, $access_data); ?>
+                    </div>
+                </div>
+            </div>
         </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="js/bootstrap.min.js"></script>
     </body>
 </html>
